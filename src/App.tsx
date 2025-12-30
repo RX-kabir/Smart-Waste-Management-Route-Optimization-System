@@ -9,6 +9,8 @@ import NotFound from "./pages/NotFound";
 // Admin Pages
 import AdminDashboard from "./pages/admin/DashboardPage";
 import AdminMapPage from "./pages/admin/MapPage";
+import AdminBinsPage from "./pages/bins";
+import AnalyticsPage from "./pages/analytics";
 
 const queryClient = new QueryClient();
 
@@ -21,11 +23,12 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-            
+
             {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/map" element={<AdminMapPage />} />
-            
+            <Route path="/admin/bins" element={<AdminBinsPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

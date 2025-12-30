@@ -73,7 +73,7 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col">
             <span className="font-display text-lg font-bold text-sidebar-foreground">
-              EcoWaste
+              BinSync
             </span>
             <span className="text-xs text-muted-foreground">
               Smart Management

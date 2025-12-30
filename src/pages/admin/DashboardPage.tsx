@@ -71,10 +71,10 @@ export default function AdminDashboard() {
                 <Link to="/admin/map">View City Map</Link>
               </Button>
               <Button variant="secondary" asChild>
-                <Link to="/admin/routes">Generate Routes</Link>
+                <Link to="/admin/map">Generate Routes</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/admin/bins">Manage Bins</Link>
+                <Link to="/admin/map">Manage Bins</Link>
               </Button>
             </CardContent>
           </Card>
