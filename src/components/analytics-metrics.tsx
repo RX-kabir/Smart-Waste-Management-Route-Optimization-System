@@ -3,6 +3,17 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react"
 import type { AnalyticsData } from "@/lib/analytics"
 
 export function AnalyticsMetrics({ data }: { data: AnalyticsData }) {
+    const totalDrivers = data.driverStats.length
+    const activeDrivers = data.driverStats.filter(d => d.total_routes > 0).length
+    const avgDriverEfficiency = Math.round(
+        data.driverStats.reduce((acc, driver) => {
+            const efficiency = (driver.completed_routes / driver.total_routes) * 100 || 0
+            return acc + efficiency
+        }, 0) / totalDrivers
+    ) || 0
+
+    const totalRouteCompletion = data.routePerformance.reduce((acc, route) => acc + Number(route.completion_rate), 0) / data.routePerformance.length || 0
+
     const metrics = [
         {
             label: "Total Bins",
@@ -17,6 +28,12 @@ export function AnalyticsMetrics({ data }: { data: AnalyticsData }) {
             description: "Created routes",
         },
         {
+            label: "Active Drivers",
+            value: `${activeDrivers}/${totalDrivers}`,
+            trend: activeDrivers > totalDrivers * 0.8 ? "up" : "down",
+            description: "Drivers on duty",
+        },
+        {
             label: "Collections (30d)",
             value: data.overview.total_collections,
             trend: "up",
@@ -27,6 +44,24 @@ export function AnalyticsMetrics({ data }: { data: AnalyticsData }) {
             value: `${Math.round(Number(data.overview.avg_fill_level))}%`,
             trend: Number(data.overview.avg_fill_level) > 60 ? "up" : "down",
             description: "Current average capacity",
+        },
+        {
+            label: "Driver Efficiency",
+            value: `${avgDriverEfficiency}%`,
+            trend: avgDriverEfficiency >= 85 ? "up" : avgDriverEfficiency >= 70 ? null : "down",
+            description: "Average completion rate",
+        },
+        {
+            label: "Route Completion",
+            value: `${Math.round(totalRouteCompletion)}%`,
+            trend: totalRouteCompletion >= 90 ? "up" : totalRouteCompletion >= 75 ? null : "down",
+            description: "Overall route success rate",
+        },
+        {
+            label: "Total Collections",
+            value: data.driverStats.reduce((acc, driver) => acc + driver.total_collections, 0),
+            trend: "up",
+            description: "All-time collections",
         },
     ]
 

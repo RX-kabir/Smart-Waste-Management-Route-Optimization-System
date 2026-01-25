@@ -3,6 +3,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BinsManagement } from "@/components/bins-management"
 import { RoutesManagement } from "./routes-management"
+import { DriversManagement } from "./drivers-management"
+import { RouteTracking } from "./route-tracking"
 import { ActivityLogsView } from "./activity-logs-view"
 import { Button } from "@/components/ui/button"
 import { BarChart3 } from "lucide-react"
@@ -31,6 +33,8 @@ export function AdminTabs({ bins, routes, activityLogs }: AdminTabsProps) {
                 <TabsList>
                     <TabsTrigger value="bins" > Bins Management </TabsTrigger>
                     < TabsTrigger value="routes" > Routes Management </TabsTrigger>
+                    < TabsTrigger value="drivers" > Drivers Management </TabsTrigger>
+                    < TabsTrigger value="tracking" > Route Tracking </TabsTrigger>
                     < TabsTrigger value="activity" > Activity Logs </TabsTrigger>
                 </TabsList>
 
@@ -40,6 +44,14 @@ export function AdminTabs({ bins, routes, activityLogs }: AdminTabsProps) {
 
                 < TabsContent value="routes" className="space-y-4" >
                     <RoutesManagement initialRoutes={routes} initialBins={bins} />
+                </TabsContent>
+
+                < TabsContent value="drivers" className="space-y-4" >
+                    <DriversManagement />
+                </TabsContent>
+
+                < TabsContent value="tracking" className="space-y-4" >
+                    <RouteTracking routes={routes} />
                 </TabsContent>
 
                 < TabsContent value="activity" className="space-y-4" >

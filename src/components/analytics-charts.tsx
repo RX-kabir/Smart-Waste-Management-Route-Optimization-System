@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import type { AnalyticsData } from "@/lib/analytics"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from "recharts"
 
 const COLORS = ["#10b981", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6"]
 
@@ -91,15 +91,31 @@ export function AnalyticsCharts({ data }: { data: AnalyticsData }) {
                     <CardDescription>Completion rates for recent routes</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
-                        {data.routePerformance.slice(0, 5).map((route) => {
+                    <div className="h-[200px] mb-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={data.routePerformance.map(route => ({
+                                name: route.route_name.length > 12 ? route.route_name.substring(0, 12) + "..." : route.route_name,
+                                completion: Number(route.completion_rate),
+                                total: route.total_bins,
+                                completed: route.completed_bins
+                            }))}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" fontSize={10} />
+                                <YAxis domain={[0, 100]} fontSize={12} />
+                                <Tooltip />
+                                <Bar dataKey="completion" fill="#f59e0b" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="space-y-2">
+                        {data.routePerformance.slice(0, 3).map((route) => {
                             const completionRate = Number(route.completion_rate)
                             return (
                                 <div key={route.route_name} className="space-y-2">
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="font-medium text-slate-900">{route.route_name}</span>
                                         <span className="text-slate-600">
-                                            {route.completed_bins}/{route.total_bins} ({completionRate}%)
+                                            {route.completed_bins}/{route.total_bins} bins ({completionRate}%)
                                         </span>
                                     </div>
                                     <Progress
@@ -118,28 +134,74 @@ export function AnalyticsCharts({ data }: { data: AnalyticsData }) {
             <Card>
                 <CardHeader>
                     <CardTitle>Driver Performance</CardTitle>
-                    <CardDescription>Statistics for active drivers</CardDescription>
+                    <CardDescription>Efficiency and activity metrics by driver</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="h-[250px] mb-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={data.driverStats.map(driver => ({
+                                name: driver.driver_name.split(' ')[0], // First name only for chart
+                                routes: driver.total_routes,
+                                completed: driver.completed_routes,
+                                efficiency: Math.round((driver.completed_routes / driver.total_routes) * 100) || 0
+                            }))}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" fontSize={12} />
+                                <YAxis fontSize={12} />
+                                <Tooltip />
+                                <Bar dataKey="routes" fill="#3b82f6" name="Total Routes" />
+                                <Bar dataKey="completed" fill="#10b981" name="Completed" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="space-y-2">
+                        {data.driverStats.map((driver) => {
+                            const efficiency = Math.round((driver.completed_routes / driver.total_routes) * 100) || 0
+                            return (
+                                <div key={driver.driver_name} className="flex items-center justify-between text-sm">
+                                    <span className="font-medium">{driver.driver_name}</span>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-slate-600">{driver.completed_routes}/{driver.total_routes} routes</span>
+                                        <Badge variant={efficiency >= 90 ? "default" : efficiency >= 75 ? "secondary" : "destructive"}>
+                                            {efficiency}%
+                                        </Badge>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Driver Status Overview */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Driver Status Overview</CardTitle>
+                    <CardDescription>Current status of all drivers</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {data.driverStats.map((driver) => (
-                            <div key={driver.driver_name} className="p-4 bg-slate-50 rounded-lg">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="font-semibold text-slate-900">{driver.driver_name}</span>
-                                    <Badge variant="secondary">{driver.total_collections} collections</Badge>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <span className="text-slate-600">Total Routes:</span>
-                                        <span className="ml-2 font-medium text-slate-900">{driver.total_routes}</span>
+                        {data.driverStats.map((driver) => {
+                            const efficiency = Math.round((driver.completed_routes / driver.total_routes) * 100) || 0
+                            const status = efficiency >= 90 ? "Excellent" : efficiency >= 75 ? "Good" : "Needs Improvement"
+                            const statusColor = efficiency >= 90 ? "text-emerald-600" : efficiency >= 75 ? "text-blue-600" : "text-red-600"
+
+                            return (
+                                <div key={driver.driver_name} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                        <div>
+                                            <div className="font-medium text-slate-900">{driver.driver_name}</div>
+                                            <div className="text-sm text-slate-600">{driver.total_collections} total collections</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <span className="text-slate-600">Completed:</span>
-                                        <span className="ml-2 font-medium text-slate-900">{driver.completed_routes}</span>
+                                    <div className="text-right">
+                                        <div className={`font-medium ${statusColor}`}>{status}</div>
+                                        <div className="text-sm text-slate-600">{efficiency}% efficiency</div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </CardContent>
             </Card>

@@ -16,7 +16,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   const { user } = useAuth();
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="flex flex-1 flex-col">
