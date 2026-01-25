@@ -110,7 +110,7 @@ export function ZonesManagement() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-6">
             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-2xl font-bold text-slate-900">Zones Management</h2>
