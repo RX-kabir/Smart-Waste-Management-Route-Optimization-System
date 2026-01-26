@@ -71,7 +71,9 @@ export function BinDialog({ open, onOpenChange, bin, onSave }: BinDialogProps) {
             capacity: Number.parseInt(formData.capacity),
             currentFillLevel: Number.parseInt(formData.currentFillLevel),
             status: bin ? bin.status : "OK", // Default status
-            lastEmptied: bin ? bin.lastEmptied : new Date()
+            lastEmptied: bin ? bin.lastEmptied : new Date(),
+            zone: bin ? bin.zone : "",
+            lastUpdated: bin ? bin.lastUpdated : new Date(),
         }
 
         onSave(newBin)

@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Bin {
+  id               String   @id @default(uuid())
+  binId            String   @unique
+  location         String
+  latitude         Float
+  longitude        Float
+  capacity         Int
+  currentFillLevel Int
+  status           String
+  lastEmptied      DateTime
+  zone             String?
+  lastUpdated      DateTime @default(now()) @updatedAt
+}

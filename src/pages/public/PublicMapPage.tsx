@@ -1,13 +1,77 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getPublicBins, getBinMarkerColor, type PublicBin } from "@/data/publicData";
 import { MapPin, Clock, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 export default function PublicMapPage() {
 	const bins = getPublicBins();
 	const [selectedBin, setSelectedBin] = useState<PublicBin | null>(null);
+	const mapContainer = useRef<HTMLDivElement>(null);
+	const map = useRef<maplibregl.Map | null>(null);
+	const markers = useRef<maplibregl.Marker[]>([]);
+
+	useEffect(() => {
+		if (map.current) return;
+		if (!mapContainer.current) return;
+
+		map.current = new maplibregl.Map({
+			container: mapContainer.current,
+			style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json", // Light style for public page
+			center: [90.4125, 23.8103], // Dhaka
+			zoom: 12,
+		});
+
+		map.current.addControl(new maplibregl.NavigationControl(), "top-right");
+
+		return () => {
+			map.current?.remove();
+			map.current = null;
+		};
+	}, []);
+
+	// Update markers when bins change
+	useEffect(() => {
+		if (!map.current) return;
+
+		// Clear existing markers
+		markers.current.forEach((marker) => marker.remove());
+		markers.current = [];
+
+		bins.forEach((bin) => {
+			const color = getBinMarkerColor(bin.status);
+
+			// Create a custom marker element
+			const el = document.createElement("div");
+			el.className = "marker";
+			el.style.width = "20px";
+			el.style.height = "20px";
+			el.style.backgroundColor = color;
+			el.style.borderRadius = "50%";
+			el.style.border = "2px solid white";
+			el.style.cursor = "pointer";
+			el.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
+
+			el.addEventListener("click", () => {
+				setSelectedBin(bin);
+				// Optional: Fly to location
+				map.current?.flyTo({
+					center: [bin.longitude, bin.latitude],
+					zoom: 14
+				});
+			});
+
+			// Add marker to map
+			const marker = new maplibregl.Marker({ element: el })
+				.setLngLat([bin.longitude, bin.latitude])
+				.addTo(map.current!);
+
+			markers.current.push(marker);
+		});
+	}, [bins]);
 
 	const getStatusBadgeVariant = (status: PublicBin["status"]) => {
 		switch (status) {
@@ -94,52 +158,10 @@ export default function PublicMapPage() {
 							<CardTitle className="font-display">Interactive Map</CardTitle>
 						</CardHeader>
 						<CardContent className="p-0">
-							<div className="relative aspect-video w-full rounded-lg border bg-muted/50 overflow-hidden">
-								{/* Simple visual representation */}
-								<div className="absolute inset-0 flex items-center justify-center">
-									<div className="text-center space-y-2">
-										<MapPin className="h-12 w-12 mx-auto text-muted-foreground" />
-										<p className="text-sm text-muted-foreground">
-											Map view with {bins.length} bin locations
-										</p>
-										<p className="text-xs text-muted-foreground">
-											Click on bins in the list to view details →
-										</p>
-									</div>
-								</div>
-
-								{/* Visual bin markers */}
-								<div className="absolute inset-0 p-8">
-									{bins.map((bin, idx) => {
-										const positions = [
-											{ top: "20%", left: "30%" },
-											{ top: "40%", left: "60%" },
-											{ top: "60%", left: "25%" },
-											{ top: "35%", left: "75%" },
-											{ top: "70%", left: "50%" },
-										];
-										const pos = positions[idx % positions.length];
-
-										return (
-											<button
-												key={bin.id}
-												onClick={() => setSelectedBin(bin)}
-												className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-transform hover:scale-125"
-												style={{ top: pos.top, left: pos.left }}
-											>
-												<div
-													className="h-6 w-6 rounded-full border-2 border-white shadow-lg"
-													style={{
-														backgroundColor: getBinMarkerColor(
-															bin.status,
-														),
-													}}
-												/>
-											</button>
-										);
-									})}
-								</div>
-							</div>
+							<div
+								ref={mapContainer}
+								className="relative aspect-video w-full rounded-lg border bg-muted/50 overflow-hidden"
+							/>
 						</CardContent>
 					</Card>
 
@@ -220,7 +242,7 @@ export default function PublicMapPage() {
 																selectedBin.status === "OK"
 																	? "#22c55e"
 																	: selectedBin.status ===
-																		  "NEEDS_PICKUP"
+																		"NEEDS_PICKUP"
 																		? "#eab308"
 																		: "#ef4444",
 														}}
@@ -312,6 +334,6 @@ export default function PublicMapPage() {
 					</CardContent>
 				</Card>
 			</div>
-		</PublicLayout>
+		</PublicLayout >
 	);
 }
